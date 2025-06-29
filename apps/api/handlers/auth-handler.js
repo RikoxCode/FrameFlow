@@ -3,11 +3,11 @@ import bcrypt from 'bcrypt';
 import { userRepo } from '../repos/user-repo.js';
 
 // Initialize auth and register pre users
-export const initializeAuth = (app) => {
+export const initializeAuth = (app, baseUrl) => {
     userRepo.register(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD)
     userRepo.register(process.env.GUEST_EMAIL, process.env.GUEST_PASSWORD)
 
-    app.post('/login', login);
+    app.post(baseUrl+'/login', login);
 };
 
 // login
@@ -35,7 +35,9 @@ export const login = (req, res) => {
             return res.status(401).send('Invalid password.');
         }
 
-        const token = jwt.sign({ email: email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const expiresIn = Date.now() + 1000 * 60 * 60 * 24; // 24 hours
+
+        const token = jwt.sign({ email: email, exp: expiresIn }, process.env.JWT_SECRET);
 
         res.send({ token });
     });
@@ -47,6 +49,12 @@ export const authorize = (req, res, next) => {
 
     if (!token) {
         return res.status(401).send('Unauthorized.');
+    }
+
+    const decoded = jwt.decode(token.split(' ')[1]);
+
+    if(decoded.exp <= Date.now()) {
+        return res.status(401).send('Token expired.');
     }
 
     jwt.verify(token.split(' ')[1], process.env.JWT_SECRET, (err, decoded) => {

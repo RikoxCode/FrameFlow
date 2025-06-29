@@ -3,15 +3,23 @@ import dropBoxV2Api from 'dropbox-v2-api';
 import { authorize } from './auth-handler.js';
 
 // Initialize dropbox handler
-export const initializeDropboxHandler = (app) => {
-    app.get('/check', (req, res) => { res.status(200).send('Server is running'); });
-    app.post('/upload', authorize, uploadFile);
-    app.get('/images', authorize, getAllImages);
+export const initializeDropboxHandler = (app, baseUrl) => {
+    app.get(baseUrl+'/check', (req, res) => { res.status(200).send('Server is running'); });
+    app.get(baseUrl+'/images', authorize, getAllImages);
+    app.post(baseUrl+'/upload', authorize, uploadFile);
 };
 
 export const uploadFile = (req, res) => {
     if (!req.files || !req.files.file) {
-        return res.status(400).send('No file uploaded.');
+        return res.status(400).json({ error: 'No files were uploaded.' });
+    }
+
+    console.log('File uploaded:', req.files.file.name);
+    console.log('File size:', req.files.file.size);
+
+    // Check first if the file is smaller than 150MB
+    if (req.files.file.size > (150 * 1024 * 1024)) {
+        return res.status(400).json({ error: 'File size exceeds the limit of 150MB.' });
     }
 
     const dropbox = dropBoxV2Api.authenticate({
@@ -36,11 +44,11 @@ export const uploadFile = (req, res) => {
         if (err) {
             console.error('Dropbox upload error:', err);
             if (!res.headersSent) {
-                return res.status(500).send({ error: err.message });
+                return res.status(500).json({ error: err.message });
             }
         }
         if (!res.headersSent) {
-            res.status(200).send(result);
+            res.status(200).json(result);
         }
     });
 };
@@ -61,7 +69,7 @@ export const getAllImages = async (req, res) => {
             }
 
             if (!result.entries || result.entries.length === 0) {
-                return res.status(404).send({ error: "Keine Dateien im 'uploads'-Ordner gefunden." });
+                return res.status(404).json({ error: "Keine Dateien im 'uploads'-Ordner gefunden." });
             }
 
             const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov', '.avi'];
@@ -71,7 +79,7 @@ export const getAllImages = async (req, res) => {
             );
 
             if (mediaFiles.length === 0) {
-                return res.status(404).send({ error: "Keine Medien-Dateien im 'uploads'-Ordner gefunden." });
+                return res.status(404).json({ error: "Keine Medien-Dateien im 'uploads'-Ordner gefunden." });
             }
 
             // Get or generate shared links
@@ -107,14 +115,10 @@ export const getAllImages = async (req, res) => {
             }));
 
             const filteredLinks = mediaLinks.filter(link => link !== null);
-            return res.status(200).send(filteredLinks);
+            return res.status(200).json(filteredLinks);
         });
     } catch (error) {
         console.error('Server Error:', error);
-        return res.status(500).send({ error: "Interner Serverfehler" });
+        return res.status(500).json({ error: "Interner Serverfehler" });
     }
-};
-
-export const getSocketDiashow = async (req, res) => {
-    res.status(200).send({ message: "WebSocket-Diashow läuft auf ws://localhost:3001" });
 };

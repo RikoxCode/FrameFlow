@@ -12,12 +12,12 @@ const app = express();
 
 // Middleware for file uploads
 app.use(fileUpload());
-initializeDropboxHandler(app);
+initializeDropboxHandler(app, '/api/dropbox');
 
 // Parse incoming requests with JSON payloads
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-initializeAuth(app);
+initializeAuth(app, '/api/auth');
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
