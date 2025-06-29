@@ -1,30 +1,49 @@
 import express from 'express';
 import dotenv from "dotenv";
 import fileUpload from 'express-fileupload';
-import * as socket from "socket.io";
-dotenv.config();
+import { Server } from "socket.io";
+import http from "http";
+import cors from 'cors';
 
 import { initializeAuth } from "./handlers/auth-handler.js";
 import { initializeDropboxHandler } from "./handlers/dropbox-handler.js";
+import { initSocketServer } from "./handlers/socket-handler.js";
 
-// Initialize express app
+
+dotenv.config();
+
 const app = express();
+const server = http.createServer(app);
 
-// Middleware for file uploads
+//middleware
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'https://hochzeits-app.netshlife.dev'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true
+}));
+
+
 app.use(fileUpload());
 initializeDropboxHandler(app, '/api/dropbox');
-
-// Parse incoming requests with JSON payloads
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 initializeAuth(app, '/api/auth');
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
-    console.log(`http://localhost:${process.env.PORT}`);
+server.listen(process.env.PORT, () => {
+    console.log(`HTTP & Socket Server läuft auf Port ${process.env.PORT}`);
 });
 
-export const io = new socket.Server(app.listen(process.env.SOCKET_PORT, () => {
-    console.log(`Socket server is running on port ${process.env.SOCKET_PORT}`);
-    console.log(`http://localhost:${process.env.SOCKET_PORT}`);
-}));
+const io = new Server(server, {
+    cors: {
+        origin: [
+            'http://localhost:5173',
+            'https://hochzeits-app.netshlife.dev'
+        ],
+        methods: ['GET', 'POST']
+    }
+});
+
+initSocketServer(io);
