@@ -20,7 +20,7 @@ const overlayVisible = ref(false);
 const currentIndex = ref(0);
 
 onMounted(() => {
-  socket = io('http://localhost:3040');
+  socket = io('http://localhost:3000');
 
   socket.on('statistics', (data) => {
     if (data?.error) {

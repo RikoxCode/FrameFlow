@@ -1,0 +1,17 @@
+{
+  "name": "frameflow",
+  "version": "1.0.0",
+  "description": "[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)\r [![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)\r [![Vue.js](https://img.shields.io/badge/Vue-3.x-brightgreen)](https://vuejs.org/)\r [![Socket.io](https://img.shields.io/badge/Socket.io-Realtime-blue)](https://socket.io/)\r [![Dropbox API](https://img.shields.io/badge/Dropbox-API-blue)](https://www.dropbox.com/developers)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:prod": "concurrently \"cd apps/api && npm start\" \"cd apps/web && npm run preview\"",
+    "start:dev": "concurrently \"cd apps/api && npm run dev\" \"cd apps/web && npm run dev\"",
+    "install": "concurrently \"cd apps/api && npm install\" \"cd apps/web && npm install\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

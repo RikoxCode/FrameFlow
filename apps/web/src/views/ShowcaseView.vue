@@ -9,7 +9,7 @@ let socket;
 let countdownInterval;
 
 onMounted(() => {
-  socket = io('http://localhost:3040');
+  socket = io('http://localhost:3000');
 
   socket.on('diashow', (data) => {
     if (data?.error) {

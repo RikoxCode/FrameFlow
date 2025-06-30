@@ -9,7 +9,7 @@ export const initializeDropboxHandler = (app, baseUrl) => {
     app.post(baseUrl+'/upload', uploadFile);
 };
 
-export const uploadFile = (req, res) => {
+export const uploadFile = async (req, res) => {
     if (!req.files || !req.files.file) {
         return res.status(400).json({ error: 'No files were uploaded.' });
     }
@@ -22,7 +22,7 @@ export const uploadFile = (req, res) => {
         return res.status(400).json({ error: 'File size exceeds the limit of 150MB.' });
     }
 
-    const dropbox = getDropboxInstance();
+    const dropbox = await getDropboxInstance();
 
     const file = req.files.file;
     const stream = new PassThrough();

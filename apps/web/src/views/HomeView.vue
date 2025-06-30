@@ -1,14 +1,13 @@
 <script setup>
 import Icon from "@/components/Icon.vue";
-import {ref, onMounted} from 'vue';
-import {RouterLink, RouterView} from 'vue-router';
+import {ref} from 'vue';
 import 'animate.css';
 import Router from "@/router/index.js";
 
 const fileInput = ref(null);
 const filename = ref('');
 const isUploaded = ref(false);
-const url = 'http://localhost:3040/api/dropbox/upload';
+const url = 'http://localhost:3000/api/dropbox/upload';
 const loading = ref(false);
 
 const handleFileChange = (event) => {
@@ -38,7 +37,7 @@ const sendFile = async () => {
 
   if (response.ok) {
     loading.value = false;
-    Router.push('/success');
+    await Router.push('/success');
   }
 };
 </script>

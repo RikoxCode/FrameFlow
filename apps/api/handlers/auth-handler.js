@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { userRepo } from '../repos/user-repo.js';
 
 // Initialize auth and register pre users

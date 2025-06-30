@@ -19,7 +19,8 @@ const server = http.createServer(app);
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://hochzeits-app.netshlife.dev'
+        'https://hochzeits-app.netshlife.dev',
+        'http://localhost'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
@@ -40,6 +41,7 @@ const io = new Server(server, {
     cors: {
         origin: [
             'http://localhost:5173',
+            'http://localhost',
             'https://hochzeits-app.netshlife.dev'
         ],
         methods: ['GET', 'POST']
