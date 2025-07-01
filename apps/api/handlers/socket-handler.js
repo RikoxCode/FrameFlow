@@ -105,34 +105,55 @@ function getStatistics() {
 export function initSocketServer(io) {
     const startDiashow = async () => {
         try {
+            console.log("Starte Diashow...");
             mediaFiles = await fetchMediaFiles();
 
-            interval_ReloadMediaFiles = setInterval(async () => {
-                mediaFiles = await fetchMediaFiles();
-            }, 60000);
+            // Stoppe alte Intervals falls vorhanden
+            if (interval) clearInterval(interval);
+            if (interval_ReloadMediaFiles) clearInterval(interval_ReloadMediaFiles);
+
+            // Media Files alle 60 Sekunden neu laden
+            const reloadMediaFiles = () => {
+                interval_ReloadMediaFiles = setInterval(async () => {
+                    console.log("Lade Media Files neu...");
+                    mediaFiles = await fetchMediaFiles();
+                }, 60000);
+            }
 
             if (mediaFiles.length === 0) {
                 console.error("Keine Medien verfügbar");
                 return;
             }
 
+            console.log("Diashow gestartet, gesamt:", mediaFiles.length, "Bilder");
+
+            // Erstes Bild sofort senden
             io.emit("diashow", mediaFiles[index]);
             io.emit("mediaFiles", mediaFiles);
             io.emit("statistics", getStatistics());
 
-            interval = setInterval(() => {
-                index = index + 1;
+            // Diashow Interval starten - WICHTIG: Nach dem ersten emit!
+            const startSlideshow = () => {
+                interval = setInterval(() => {
+                    console.log(`Slideshow tick - Index: ${index}, Total: ${mediaFiles.length}`);
 
-                if (index >= mediaFiles.length) {
-                    index = 0;
-                }
+                    index = index + 1;
+                    if (index >= mediaFiles.length) {
+                        index = 0;
+                    }
 
-                io.emit("diashow", mediaFiles[index]);
-                io.emit("mediaFiles", mediaFiles);
-                io.emit("statistics", getStatistics());
-            }, 10000);
+                    console.log(`Sende Bild ${index + 1}/${mediaFiles.length}: ${mediaFiles[index]?.name}`);
 
-            console.log("Diashow gestartet, gesamt:", mediaFiles.length, "Bilder");
+                    io.emit("diashow", mediaFiles[index]);
+                    io.emit("mediaFiles", mediaFiles);
+                    io.emit("statistics", getStatistics());
+                }, 10000);
+            };
+
+            // Slideshow nach kurzer Verzögerung starten
+            setTimeout(startSlideshow, 1000);
+            // Media Files neu laden
+            setTimeout(reloadMediaFiles, 1000);
 
         } catch (error) {
             console.error("Fehler beim Laden der Diashow:", error);
